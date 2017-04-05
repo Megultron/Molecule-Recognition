@@ -15,9 +15,11 @@ while start < 608771:
                 final.append(x.split(' - '))
     except NoSuchElementException:
         #Ignore this case
-        print 'goteeeeem'
+        print 'Page not present'
     #print(f.text.splitlines())
 
     start += 1
 
 print final
+d.get("https://pubchem.ncbi.nlm.nih.gov/")
+d.quit()
