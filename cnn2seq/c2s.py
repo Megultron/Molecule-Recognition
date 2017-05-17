@@ -68,6 +68,18 @@ def variable_summaries(var, name):
         tf.scalar_summary('min/' + name, tf.reduce_min(var))
         tf.histogram_summary(name, var)
 
+def calc_max_one_hot(vec):
+    max_element = np.amax(np.array(vec))
+    for i in range(len(vec)):
+        vec[i] = 1.0 if vec[i] == max_element else 0.0
+    return vec
+
+def convert_to_one_hot(val, target_len):
+    val = int(val)
+    one_hot = np.zeros(target_len)
+    one_hot[val] = 1.0
+    return one_hot
+
 
 class ConvNet(object):
     def __init__(self, resolution, conv_shapes, fc_shapes, filter_shapes,   stride_shapes, batch_size):
@@ -92,6 +104,7 @@ class ConvNet(object):
         self.resolution = resolution
         self.inputs = tf.placeholder(tf.float32, [batch_size] + \
                         list(resolution) + [1], name="Input")
+        self.output_shape = fc_shapes[-1]
 
         # variable_summaries(self.inputs, self.inputs.name)
 
@@ -137,7 +150,7 @@ class ConvNet(object):
             self.outputs = self.layers[-1]
 
 class RecNet(object):
-    def __init__(self, input_shape, layer_shapes, dropout_keep_prob):
+    def __init__(self, input_shape, hidden_shape, n_layers, dropout):
         """Constructs a multi-layered recurrent neural network.
 
             Given an iterable of layer sizes and a dropout probability,
@@ -157,20 +170,26 @@ class RecNet(object):
             Raises:
                 AssertError: dropout probability is less than zero or greater than one
         """
-        assert (dropout_keep_prob >= 0.0) and (dropout_keep_prob <= 1.0)
+        assert (dropout >= 0.0) and (dropout <= 1.0)
         self.input_shape = input_shape
-        self.output_shape = layer_shapes[-1]
+        self.hidden_shape = hidden_shape
+        self.output_shape = hidden_shape
         self.inputs = tf.placeholder(tf.float32, input_shape)
         rnn_cells = []
         with tf.variable_scope('rnn_model') as scope:
-            for shape in layer_shapes:
-                tmp_cell = tf.nn.rnn_cell.BasicLSTMCell(shape,
-                    state_is_tuple=True)
-                tmp_cell = tf.nn.rnn_cell.DropoutWrapper(tmp_cell,
-                    output_keep_prob=dropout_keep_prob)
-                rnn_cells.append(tmp_cell)
-            self.net = tf.nn.rnn_cell.MultiRNNCell(rnn_cells,
-                state_is_tuple=True)
+            lstm = tf.nn.rnn_cell.BasicLSTMCell(hidden_shape,
+                        state_is_tuple=True)
+            lstm = tf.nn.rnn_cell.DropoutWrapper(lstm, output_keep_prob=dropout)
+            self.net = tf.nn.rnn_cell.MultiRNNCell([lstm] * n_layers,
+                        state_is_tuple=True)
+            # for shape in layer_shapes:
+            #     tmp_cell = tf.nn.rnn_cell.BasicLSTMCell(shape,
+            #         state_is_tuple=True)
+            #     tmp_cell = tf.nn.rnn_cell.DropoutWrapper(tmp_cell,
+            #         output_keep_prob=dropout_keep_prob)
+            #     rnn_cells.append(tmp_cell)
+            # self.net = tf.nn.rnn_cell.MultiRNNCell(rnn_cells,
+            #     state_is_tuple=True)
         # fc_layer = tf.contrib.layers.fully_connected(self.rnn,
         #             fc_shape, activation_fn=tf.nn.relu,
         #             weights_initializer=tf.contrib.layers.xavier_initializer(),
@@ -178,152 +197,279 @@ class RecNet(object):
         #             scope="fc_1")
         # self.outputs = fc_layer
 
-    def get_output(self, x):
-        output, _ = tf.nn.dynamic_rnn(self.net, x, dtype=tf.float32,
-                        scope="rnn_output")
-        output = tf.transpose(output, [1, 0, 2])
-
-    def get_dummy_output(self):
-        x = tf.zeros(self.inputs.get_shape())
-        self.get_output(x)
-
 
 class C2SModel(object):
     def __init__(self, cnn, rnn, learning_rate, batch_size, rnn_seq_length,
-                    fully_connected_shapes, alphabet):
+                    fully_connected_shapes, alphabet, null_terminator,
+                    embedding_size, max_seq_len):
+        assert null_terminator in alphabet
+        # Component networks
         self.cnn = cnn
         self.rnn = rnn
-        self.batch_size = batch_size
-        self.y = tf.placeholder(tf.float32, [self.batch_size, len(alphabet)])
-        self.merged = tf.merge_all_summaries()
+        # Model parameters
         self.lr = learning_rate
-        self.fc_shapes = fully_connected_shapes
-        self.inputs = cnn.inputs
+        self.batch_size = batch_size
+        self.seq_len = max_seq_len
         self.alphabet = alphabet
+        self.null_terminator = null_terminator
+        self.img_embedding_size = embedding_size
+        # Image embedding
+        self.img_features = self.cnn.outputs
+        self.img_embedding_weights = \
+            tf.Variable(tf.truncated_normal([self.cnn.output_shape,
+                self.rnn.hidden_shape], stddev=0.01))
+        self.img_embedding_bias = tf.Variable(tf.constant(0.1,
+                                    shape=[self.rnn.hidden_shape]))
+        self.h0 = tf.matmul(self.img_features, self.img_embedding_weights) \
+                    + self.img_embedding_bias
+        self.c0 = tf.zeros_like(self.h0)
+        # Character to one-hot
         vec = pandas.get_dummies(alphabet).to_dict()
         for k in vec.keys():
             vs = vec[k].values()
             vec[k] = tuple([v for v in vs])
         self.alph2vec = vec
         self.vec2alph = {value:key for key, value in self.alph2vec.items()}
-        self.rnn_state = self.rnn.net.zero_state(self.batch_size, tf.float32)
-        self.train_length = rnn_seq_length
+        self.input_char = tf.placeholder(tf.float32, [self.batch_size,
+                            self.seq_len, len(self.alphabet)])
+        # Other
         self.step = 0
 
+    def iupac_to_one_hots(self, iupac):
+        one_hots = np.zeros([self.seq_len, len(self.alphabet)])
+        seq_pos = 0
+        for i in range(len(iupac)):
+            one_hots[seq_pos] = self.alph2vec[iupac[i]]
+            seq_pos += 1
+        for i in range(len(iupac), self.seq_len):
+            one_hots[seq_pos] = self.alph2vec[self.null_terminator]
+            seq_pos += 1
+        return one_hots
+
     def get_output(self):
-        #with tf.variable_scope("model_outputs"):
-        #     with tf.variable_scope("cnn"):
-        #         cnn_output = sess.run(self.cnn.outputs,
-        #                         feed_dict={self.cnn.inputs: x})
-        #         cnn_output = cnn_output.tolist()
-        #         #cnn_output = self.cnn.outputs
-        cnn_output = self.cnn.outputs
-
-        cnn_flat = tf.reshape(slim.flatten(cnn_output), \
-                    [self.batch_size, self.train_length, self.rnn.input_shape[0]])
-        with tf.variable_scope("rnn"):
-            label = "rnn_" + str(self.step)
-            # rnn_output, self.rnn_state = self.rnn.net(self.cnn.outputs,
-            #                                 self.rnn_state, scope=label)
-            rnn_output, self.rnn_state = \
-                tf.nn.dynamic_rnn(\
-                    self.rnn.net, cnn_flat, dtype=tf.float32,
-                    initial_state=self.rnn_state)
-            rnn_output = tf.reshape(rnn_output, [-1, self.rnn.output_shape])
-            # rnn_output = tf.slice(rnn_output, [1, 0, 0],
-            #                 [0, -1, -1])
-            #rnn_output = tf.split(0, self.batch_size, rnn_output)[0]
-
-        with tf.variable_scope("softmax"):
-            fc = tf.contrib.layers.fully_connected(rnn_output, \
-                    len(self.alphabet), activation_fn=tf.nn.relu,
-                    weights_initializer= \
-                        tf.contrib.layers.xavier_initializer(),
-                    biases_initializer=tf.constant_initializer(0.1))
-            # sm = tf.nn.softmax(fc, name="softmax_"+str(self.step))
-
-            #     tf.scalar_summary("output", rnn_output)
-            #     summary = sess.run([self.merged, rnn_output])
-            #     self.train_writer.add_summary(summary, self.step)
-        self.rnn_state = self.rnn.net.zero_state(self.batch_size, tf.float32)
+        # self.input_char = tf.reshape(self.input_char, [self.batch_size, 1,
+        #                     len(self.alphabet)])
+        rnn_output, rnn_state = tf.nn.dynamic_rnn(self.rnn.net,
+                                        self.input_char, dtype=tf.float32,
+                                        initial_state=(self.c0, self.h0),
+                                        sequence_length=[self.seq_len])
+        rnn_output = tf.reshape(rnn_output, [self.seq_len,
+                        self.rnn.output_shape])
+        # rnn_output = tf.gather(rnn_output,
+        #                 tf.range(self.get_data_length(self.seq_embedding)))
+        fc = tf.contrib.layers.fully_connected(rnn_output, len(self.alphabet),
+                activation_fn=tf.nn.relu,
+                weights_initializer=tf.contrib.layers.xavier_initializer(),
+                biases_initializer=tf.constant_initializer(0.1))
+        prediction = tf.nn.softmax(fc)
         self.step += 1
-        return fc
+        return prediction
 
     def train(self, train_samples, test_samples, iters, display_interval):
         pred = self.get_output()
-        #ce = tf.nn.sigmoid_cross_entropy_with_logits(pred, self.y)
-        ce = tf.nn.softmax_cross_entropy_with_logits(pred, self.y)
-        loss = tf.reduce_mean(ce)
-        optimizer = \
-            tf.train.RMSPropOptimizer(learning_rate=self.lr).minimize(loss)
+        target = tf.placeholder(tf.float32, [1, self.seq_len,
+                    len(self.alphabet)])
+        cross_entropy = -tf.reduce_sum(target * tf.log(pred),
+                            reduction_indices=[1])
+        cross_entropy = tf.reduce_mean(cross_entropy)
+        optimizer = tf.train.AdamOptimizer(learning_rate=self.lr,
+                        epsilon=1e-2).minimize(cross_entropy)
         sess.run(tf.initialize_all_variables())
-        print "TRAINING"
+
+        initial_input = self.iupac_to_one_hots("")
+        initial_input = np.reshape(initial_input,
+                            [1, self.seq_len, len(self.alphabet)])
         for i in range(iters):
             batch = random.sample(train_samples, self.batch_size)
             xs = []
             ys = []
             for sample in batch:
                 xs.append(sample[0])
-                y = sample[1]
-                y = self.vec2alph.keys()[y]
-                ys.append(y)
-            # pred = self.get_output(xs, i)
-            # ce = tf.nn.sigmoid_cross_entropy_with_logits(pred + 1e-6, ys)
-            # loss = tf.reduce_mean(ce)
-            # optimizer = tf.train.RMSPropOptimizer(learning_rate=self.lr)
-            # train_step = optimizer.minimize(loss)
+                ys.append(sample[1])
+            feed = {self.cnn.inputs: xs, target: ys,
+                    self.input_char: initial_input}
+            loss, _ = sess.run([cross_entropy, optimizer], feed_dict=feed)
+            if self.step % display_interval == 0:
+                print str(self.step) + ": " + str(loss)
+            self.step += 1
 
-            sess.run(optimizer, feed_dict={self.cnn.inputs: xs, self.y: ys})
-            if i % display_interval == 0:
-                print str(i) + ": " + \
-                    str(sess.run(loss, feed_dict={self.cnn.inputs: xs,
-                                                self.y: ys}))
+    # def train(self, train_samples, test_samples, iters, display_interval):
+    #     pred = self.get_output()
+    #     target = tf.placeholder(tf.float32, [None, len(self.alphabet)])
+    #     cross_entropy = -tf.reduce_sum(target * tf.log(pred),
+    #                         reduction_indices=[1])
+    #     cross_entropy = tf.reduce_mean(cross_entropy)
+    #     optimizer = tf.train.AdamOptimizer(learning_rate=self.lr,
+    #                     epsilon=1e-2).minimize(cross_entropy)
+    #     sess.run(tf.initialize_all_variables())
+    #     for i in range(iters):
+    #         batch = random.sample(train_samples, self.batch_size)
+    #         xs = []
+    #         ys = []
+    #         for sample in batch:
+    #             xs.append(sample[0])
+    #
+    #             y = sample[1]
+    #             ys.append(y)
+    #         # print xs
+    #         return
 
-        print "\nTRAINING COMPLETE\n--------------------------------"
-        print "TESTING"
-        total_loss = 0.0
-        for sample in test_samples:
-            x = [sample[0]]
-            y = sample[1]
-            y = self.vec2alph.keys()[y]
-            result, step_loss = sess.run([pred, loss], feed_dict= \
-                                {self.cnn.inputs: x, self.y: ys})
-            # print "TARGET: " + str(y)
-            # print "PREDICTION: " + str(result)
-            # print "LOSS: " + str(step_loss)
-            total_loss += step_loss
-        print "AVG TEST LOSS: " + str(total_loss / len(test_samples))
-        print "\nTESTING COMPLETE\n--------------------------------"
+        # self.null_terminator = null_terminator
+        # #assert self.null_terminator in self.alphabet
+        # self.batch_size = batch_size
+        # # Image embeddings
+        # # self.img_features = tf.placeholder(tf.float32, [None,
+        # #                         self.cnn.output_shape])
+        # self.img_features = self.cnn.outputs
+        # self.img_embedding_weights = \
+        #     tf.Variable(tf.truncated_normal([self.cnn.output_shape,
+        #         self.rnn.hidden_shape], stddev=0.01))
+        # self.img_embedding_bias = tf.Variable(tf.constant(0.1,
+        #                             shape=[self.rnn.hidden_shape]))
+        # self.h0 = tf.matmul(self.img_features, self.img_embedding_weights) \
+        #             + self.img_embedding_bias
+        # self.c0 = tf.zeros_like(self.h0)
+        # # Label embedding
+        # self.embedding_size = embedding_size
+        # self.max_seq_len = max_seq_len
+        # self.seq_embedding_matrix = \
+        #     tf.Variable(tf.random_uniform([len(self.alphabet)+1,
+        #         self.rnn.input_shape[0]], -1.0, 1.0))
+        # self.seq_input = tf.placeholder(tf.int32, [None])
+        # self.seq_embedding = tf.concat(0,
+        #     [tf.nn.embedding_lookup(self.seq_embedding_matrix,
+        #         self.seq_input), tf.zeros([self.max_seq_len - \
+        #         tf.shape(self.seq_input)[0], self.rnn.input_shape[0]])])
+        # self.seq_embedding = tf.reshape(self.seq_embedding, [1, -1,
+        #                         self.rnn.input_shape[0]])
+        # # IO, params, and dictionary creation
+        # self.x = np.zeros([self.batch_size, 30, 30, 1])
+        # self.y = tf.placeholder(tf.float32, [None, len(alphabet)])
+        # # self.output = tf.placeholder(tf.float32, [None,
+        # #             len(alphabet)])
+        # self.merged = tf.merge_all_summaries()
+        # self.lr = learning_rate
+        # self.fc_shapes = fully_connected_shapes
+        # self.inputs = cnn.inputs
+        # #vec = pandas.get_dummies(alphabet).to_dict()
+        # self.numbered_alph = {}
+        # for i in range(len(self.alphabet)):
+        #     self.numbered_alph[self.alphabet[i]] = float(i)
+        # self.numbered_alph["#"] = -1.0
+        #
+        # self.label_starts = [self.label_to_nums("#" + char) for char in\
+        #                         self.alphabet]
+        # self.label_ends = [char + "#" for char in self.alphabet]
+        # self.label_starts = [np.eye(len(self.alphabet)+1)[l] for l in \
+        #                         self.label_starts]
+        # # for k in vec.keys():
+        # #     vs = vec[k].values()
+        # #     vec[k] = tuple([v for v in vs])
+        # # self.alph2vec = vec
+        # # self.vec2alph = {value:key for key, value in self.alph2vec.items()}
+        # # self.rnn_state = self.rnn.net.zero_state(self.batch_size, tf.float32)
+        # self.train_length = rnn_seq_length
+        # self.step = 0
+
+    # def label_to_nums(self, s):
+    #     nums = np.zeros(len(s))
+    #     for i in range(len(s)):
+    #         nums[i] = self.numbered_alph[s[i]]
+    #     return nums
+    #
+    # def get_data_length(self, data):
+    #     used = tf.sign(tf.reduce_max(tf.abs(data), reduction_indices=2))
+    #     length = tf.reduce_sum(used, reduction_indices=1)
+    #     length = tf.cast(length, tf.int32)
+    #     return length
+
+    # def get_output(self):
+    #     label = "rnn_" + str(self.step)
+    #     self.img_features = self.cnn.outputs
+    #     rnn_output, rnn_state = tf.nn.dynamic_rnn(self.rnn.net,
+    #                                     self.seq_embedding, dtype=tf.float32,
+    #                                     initial_state=(self.c0, self.h0),
+    #                                     sequence_length=self.get_data_length\
+    #                                         (self.seq_embedding))
+    #     rnn_output = tf.reshape(rnn_output, [-1] + self.rnn.output_shape)
+    #     rnn_output = tf.gather(rnn_output,
+    #                     tf.range(self.get_data_length(self.seq_embedding)))
+    #     fc = tf.contrib.layers.fully_connected(rnn_output, len(self.alphabet),
+    #             activation_fn=tf.nn.relu,
+    #             weights_initializer=tf.contrib.layers.xavier_initializer(),
+    #             biases_initializer=tf.constant_initializer(0.1))
+    #     prediction = tf.nn.softmax(fc)
+    #     self.step += 1
+    #     return prediction
+    #
+    # def train(self, train_samples, test_samples, iters, display_interval):
+    #     pred = self.get_output()
+    #     target = tf.placeholder(tf.float32, [None, len(self.alphabet)])
+    #     cross_entropy = -tf.reduce_sum(target * tf.log(pred),
+    #                         reduction_indices=[1])
+    #     cross_entropy = tf.reduce_mean(cross_entropy)
+    #     optimizer = tf.train.AdamOptimizer(learning_rate=self.lr,
+    #                     epsilon=1e-2).minimize(cross_entropy)
+    #     sess.run(tf.initialize_all_variables())
+    #     for i in range(iters):
+    #         batch = random.sample(train_samples, self.batch_size)
+    #         xs = []
+    #         ys = []
+    #         for sample in batch:
+    #             xs.append(sample[0])
+    #
+    #             y = sample[1]
+    #             ys.append(y)
+    #         # print xs
+    #         return
 
 if __name__ == "__main__":
     from tensorflow.examples.tutorials.mnist import input_data
     #mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
     batch_size = 1
-    resolution = (64, 64)
+    n_iters = 7000
+    resolution = (30, 30)
     sample_input_shape = list(resolution) + [1]
-    alphabet = [char for char in "0123456789abcdef#!,"]
+    alphabet = [char for char in "abcdefghijklmnopqrstuvwxzy0123456789-#"]
+    null_terminator = '#'
     summaries_dir = ""
+    embedding_size = 820
+    n_hidden = 820
+    max_seq_len = 250
 
-    cnn = ConvNet(resolution, [16, 8, 4], [100, 80, 50], [[6,6], [4,4],
+    cnn = ConvNet(resolution, [16, 8, 4], [200], [[6,6], [4,4],
             [2,2]], [[3,3], [3,3], [3,3]], batch_size)
     #rnn_input_shape = [50, batch_size, 3]
-    rnn_input_shape = [50]
-    rnn = RecNet(rnn_input_shape, [300, 200, 100], 0.5)
-    c2s = C2SModel(cnn, rnn, 0.001, batch_size, 1, [150, 100, 75], alphabet)
+    rnn_input_shape = [len(alphabet)]
+    rnn = RecNet(rnn_input_shape, n_hidden, 1, 0.6)
+    c2s = C2SModel(cnn, rnn, 0.001, batch_size, max_seq_len, [200, 150, 100], alphabet,
+            null_terminator, embedding_size, max_seq_len)
 
-    # sess.run(tf.initialize_all_variables())
-    rnn_input_size = 50
     samples = []
-    for i in range(8000):
-        xs = np.random.rand(64,64,1)*len(alphabet)
-        y = int(np.average(xs))
+    for i in range(2000):
+        y = []
+        xs = np.random.rand(30,30,1) * len(alphabet)
+        x_average = np.average(xs)
+        x_median = np.median(xs)
+        tmp_y = int(x_average * x_median / len(alphabet))
+        one_hot = convert_to_one_hot(tmp_y, len(alphabet))
+        for i in range(max_seq_len):
+            y.append(one_hot)
+            tmp_y += 1
         samples.append((xs, y))
     test_samples = []
-    for i in range(4000):
-        xs = np.random.rand(64,64,1)*len(alphabet)
-        y = int(np.average(xs))
+    for i in range(200):
+        y = []
+        xs = np.random.rand(30,30,1) * len(alphabet)
+        x_average = np.average(xs)
+        x_median = np.median(xs)
+        tmp_y = int(x_average * x_median / len(alphabet))
+        one_hot = convert_to_one_hot(tmp_y, len(alphabet))
+        for i in range(max_seq_len):
+            y.append(one_hot)
+            tmp_y += 1
         test_samples.append((xs, y))
-    c2s.train(samples, test_samples, 500, display_interval=10)
+    c2s.train(samples, test_samples, n_iters, display_interval=25)
 
     # with tf.variable_scope("c2s", reuse=None) as scope:
     #     c2s.get_output(np.ones([batch_size] + list(resolution)+ [1]), i)
