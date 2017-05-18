@@ -44,6 +44,57 @@
 # MMMMMMMMMMMMMMMMMMMMMMMMMMMmyhMMMMMMMMMMMMMMMMMMMMMMMMMMMMNNMNmmmhyyyssssyhhyy
 # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMdsNMMMMMMMMMMMMMMMMMMMMMMMMMMMNMMMMMmhhhyyyhhysso
 
+# ...-:::://////dN:......```````````````````````````````````````````````````````
+# ...-:::://////dN:......```````````````````````````````````````````````````````
+# ....:::://////dN:......```````````````````````````````````````````````````````
+# ....::::://///dN/......```````````````````````````````````````````````````````
+# ....::::://///dN/.....`````````````...````````````````````````````````````````
+# ....-:::://///dN/.....``````````/oyhdddho-````````````````````````````````````
+# .``.-:::://///dN/.```.````````-y+/:/++osydo```````````````````````````````````
+# .....+::::////dN:`````````````s+:-:///++osmo``````````````````````````````````
+# .....+::::////dN/````````````.s:/o+//+ooosdo``````````````````````````````````
+# /:/:.+:::::///hN/````````````:/:+o+/ohyysod/``````````````````````````````````
+# hoso:+:::::///hN/````````````::::///ssooooy/``````````````````````````````````
+# yyss:+:::::///hN/`````````````::+o+sssoooo+```````````````````````````````````
+# /ooo-//::::///hN/`````````````:/++osysos+.````````````````````````````````````
+# `...`//::::://hN/````````````+/++++osss/``````````````````````````````````````
+# `..``//::::://hN+`````````:odNdsosyhhys```````````````````````````````````````
+# `````//::::://hN+````.:ohmNMMMMMNmddddy.``````````````````````````````````````
+# ```..:::::::::hN+``:sdNNMMMMMMMMMMMMMMMms/-.```````````.--```````-/-``````````
+# ```.---::::::/hN+`omNNMMMMMMMMMMMMMMMMMMMMNmdo-`````..::::-.```-/+:://.```````
+# ````.--:::::::hN+/NNMMMMMMMMMMMMMMMMMMMMMMMMMMNs.`.--:::/+oo-/oos+++:/.```````
+# ```..--:::::::hNsmNMMMMMMMMMMMMMMMMMMMMMMMMMMMMNo---:/+++:+hhdhhyyo+/.````````
+# ````.--:::::::hNmNNNMMMMMMMMMMMMMMMMMMMMMMMMMMh+---:/-.```/dddhyys/:-`````````
+# ````.--:::::::hNNNNNMMMMMMMMMMMMMMMMMMMMMMMMNNy::/oo.````-yddhhys/--.`````````
+# ````.--:::::::hNNMNNNMMMMMMMMMMMMMMMMMMMMMMMMMMmdNNm/```:mMNNmd:.`````````````
+# ````.---::::::yNNNMNNNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNy--mMMMMMM/``````````````
+# ````.---::::::yNmNMMMNNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNmMMMMMMMo``````````````
+# ````.---::::::yNhNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMh.``````````````
+# ````.---::::::yNymMMMMMMMNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN-```````````````
+# ````.---::::::yNymNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNs``````.`````````
+# ````.---::::::yNymMMMMMMMMMMMMMMMMMMMMMMMMMMMMm++yhddmmNNNNh/`````````````````
+# ````.----:::::sNyyMMMMMMMMMMMMMMMMMMMMMMMMMMMMy``````.-:::-```````````````````
+# ````..-++o+o+/sNy:MMMMMMMMMMMMMMMMMMMMMMMMMMMM:```````````````````````````````
+# ````..-:+syhs+smy-MMMMMMMMMMMMMMMMMMMMMMMMMMMy.....```````````````````````````
+# ````...-/syds+smy`mMMMMMMMMMMMMMMMMMMMMMMMMNdysyyyys+-.```````````````````````
+# ````..-:/ssds+smy`dMMMMMMMMMMMMMMMMMMMMMMmdddddddmmmmdy/``````````````````````
+# ````.-:/+ooyo/sNy`hMMMMMMMMMMMMMMMMMMMMMmhddddddmmmmmmmm+`````````````........
+# `````--:::::::oNh`:NMMMMMMMMMMMMMMMMMMMNhhhhddhdmmmmmmmmh.....................
+# `````----:::::oNh`-hdmmNNNNNMMMMMMMMMMMmyyyyhhhddmmmmmmmh.....................
+# .````----:::::oNh`:++++ossyyhhdmmNNNNMhyyyyyyhhhddmmmmdd+.....................
+# +.``.---::::::oNh`/+++osyyyyyyyyyyyyhd+syyyyhhhddddmmddh+++++++oooooosssssssss
+# Nh:..---::::::oNh.++oosyyyyyyyyyyyyyhdooossyyyhhdyhdmmmmmmmmmmmmmmmmmmmmNmmmNm
+# MNdo+oo/::::::oNd+++ossssysyyyyyyyyyhhhy+++ossyhdshmmmmmNNNNmdNmmNNNmmmmmmmmmm
+# Nmdddddo::::::+Nho++ooossssyyyyyyyyyyhsy///+++osdshmNNNNNNNNNmNNmNmmysssssssss
+# mmdddmmho+////+mhoossosssssyyyssoooyso+//::::::/dshmNMNNNNNMNmNNmNNmysssssssos
+# NNNNNNNNmddhhssdhosysssssssy+----:://::::://///+dyhmNMMNNNNNNmNNmNmmsoooo++ooo
+# NNNNNNNNNNNNNNmmmhhyyssssyyy+.....---:/++++++/+odydNNMMNNNNNNmNNdmddsoo+++++++
+# MMMMNNMMMMMNMNNNNNNNdysssyyyo-`...:-:+oo++/::/++dydNNMMMNNNNNmNNNNNms+++++++++
+# MMMMNMMMMMNNNMNNMMMNNdyssyo::.```..-++/:--:::--/dydNNMMMNNNNNmNNmNmhs++++//+++
+# MMMNMMMMMNNNNMNNNNNNmdhso-`--```...-:-----:::/oydydNNMMMNNNNNmNNNNNNy//////+++
+# MMNNMMMMNNNNMMNNNNNNNdy/.``...``....------/sss+odymNNMMMMNNNNmNNmNmmy+/////+++
+
+
 import cPickle as pickle
 import numpy as np
 import pandas
@@ -52,8 +103,9 @@ import tensorflow as tf
 import tensorflow.contrib.slim as slim
 import os
 import sys
-util_path = os.path.abspath(os.path.join('..'))
+util_path = os.path.abspath(os.path.join('../util'))
 sys.path.append(util_path)
+import set_assembler
 
 sess = tf.Session()
 
@@ -103,7 +155,7 @@ class ConvNet(object):
 
         self.resolution = resolution
         self.inputs = tf.placeholder(tf.float32, [batch_size] + \
-                        list(resolution) + [1], name="Input")
+                        list(resolution) + [1], name="CNN_Input")
         self.output_shape = fc_shapes[-1]
 
         # variable_summaries(self.inputs, self.inputs.name)
@@ -236,13 +288,13 @@ class C2SModel(object):
         self.step = 0
 
     def iupac_to_one_hots(self, iupac):
-        one_hots = np.zeros([self.seq_len, len(self.alphabet)])
+        one_hots = np.zeros([1, self.seq_len, len(self.alphabet)])
         seq_pos = 0
         for i in range(len(iupac)):
-            one_hots[seq_pos] = self.alph2vec[iupac[i]]
+            one_hots[0][seq_pos] = self.alph2vec[iupac[i]]
             seq_pos += 1
         for i in range(len(iupac), self.seq_len):
-            one_hots[seq_pos] = self.alph2vec[self.null_terminator]
+            one_hots[0][seq_pos] = self.alph2vec[self.null_terminator]
             seq_pos += 1
         return one_hots
 
@@ -261,7 +313,7 @@ class C2SModel(object):
                 activation_fn=tf.nn.relu,
                 weights_initializer=tf.contrib.layers.xavier_initializer(),
                 biases_initializer=tf.constant_initializer(0.1))
-        prediction = tf.nn.softmax(fc)
+        prediction = tf.nn.softmax(fc, name="Softmax")
         self.step += 1
         return prediction
 
@@ -272,13 +324,19 @@ class C2SModel(object):
         cross_entropy = -tf.reduce_sum(target * tf.log(pred),
                             reduction_indices=[1])
         cross_entropy = tf.reduce_mean(cross_entropy)
+        # argmax = tf.argmax(pred)
+        pred_one_hot = tf.one_hot(tf.nn.top_k(pred).indices, 1)
+        correct_pred = tf.equal(tf.argmax(pred_one_hot,1), tf.argmax(target,1))
+        accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
         optimizer = tf.train.AdamOptimizer(learning_rate=self.lr,
                         epsilon=1e-2).minimize(cross_entropy)
         sess.run(tf.initialize_all_variables())
 
         initial_input = self.iupac_to_one_hots("")
-        initial_input = np.reshape(initial_input,
-                            [1, self.seq_len, len(self.alphabet)])
+        # initial_input = np.reshape(initial_input,
+        #                     [1, self.seq_len, len(self.alphabet)])
+        total_acc = 0.0
+        display_counter = 0
         for i in range(iters):
             batch = random.sample(train_samples, self.batch_size)
             xs = []
@@ -286,195 +344,97 @@ class C2SModel(object):
             for sample in batch:
                 xs.append(sample[0])
                 ys.append(sample[1])
+            ys = self.iupac_to_one_hots(ys[0])
             feed = {self.cnn.inputs: xs, target: ys,
                     self.input_char: initial_input}
-            loss, _ = sess.run([cross_entropy, optimizer], feed_dict=feed)
+            loss, correct_percent, _ = sess.run([cross_entropy, accuracy,
+                                optimizer], feed_dict=feed)
+            total_acc += correct_percent
+            display_counter += 1
             if self.step % display_interval == 0:
-                print str(self.step) + ": " + str(loss)
+                print str(self.step) + ": " + str(total_acc / display_counter)
+                total_acc = 0.0
+                display_counter = 0
+
+            #    print str(self.step) + ": " + str(loss)
             self.step += 1
 
-    # def train(self, train_samples, test_samples, iters, display_interval):
-    #     pred = self.get_output()
-    #     target = tf.placeholder(tf.float32, [None, len(self.alphabet)])
-    #     cross_entropy = -tf.reduce_sum(target * tf.log(pred),
-    #                         reduction_indices=[1])
-    #     cross_entropy = tf.reduce_mean(cross_entropy)
-    #     optimizer = tf.train.AdamOptimizer(learning_rate=self.lr,
-    #                     epsilon=1e-2).minimize(cross_entropy)
-    #     sess.run(tf.initialize_all_variables())
-    #     for i in range(iters):
-    #         batch = random.sample(train_samples, self.batch_size)
-    #         xs = []
-    #         ys = []
-    #         for sample in batch:
-    #             xs.append(sample[0])
-    #
-    #             y = sample[1]
-    #             ys.append(y)
-    #         # print xs
-    #         return
-
-        # self.null_terminator = null_terminator
-        # #assert self.null_terminator in self.alphabet
-        # self.batch_size = batch_size
-        # # Image embeddings
-        # # self.img_features = tf.placeholder(tf.float32, [None,
-        # #                         self.cnn.output_shape])
-        # self.img_features = self.cnn.outputs
-        # self.img_embedding_weights = \
-        #     tf.Variable(tf.truncated_normal([self.cnn.output_shape,
-        #         self.rnn.hidden_shape], stddev=0.01))
-        # self.img_embedding_bias = tf.Variable(tf.constant(0.1,
-        #                             shape=[self.rnn.hidden_shape]))
-        # self.h0 = tf.matmul(self.img_features, self.img_embedding_weights) \
-        #             + self.img_embedding_bias
-        # self.c0 = tf.zeros_like(self.h0)
-        # # Label embedding
-        # self.embedding_size = embedding_size
-        # self.max_seq_len = max_seq_len
-        # self.seq_embedding_matrix = \
-        #     tf.Variable(tf.random_uniform([len(self.alphabet)+1,
-        #         self.rnn.input_shape[0]], -1.0, 1.0))
-        # self.seq_input = tf.placeholder(tf.int32, [None])
-        # self.seq_embedding = tf.concat(0,
-        #     [tf.nn.embedding_lookup(self.seq_embedding_matrix,
-        #         self.seq_input), tf.zeros([self.max_seq_len - \
-        #         tf.shape(self.seq_input)[0], self.rnn.input_shape[0]])])
-        # self.seq_embedding = tf.reshape(self.seq_embedding, [1, -1,
-        #                         self.rnn.input_shape[0]])
-        # # IO, params, and dictionary creation
-        # self.x = np.zeros([self.batch_size, 30, 30, 1])
-        # self.y = tf.placeholder(tf.float32, [None, len(alphabet)])
-        # # self.output = tf.placeholder(tf.float32, [None,
-        # #             len(alphabet)])
-        # self.merged = tf.merge_all_summaries()
-        # self.lr = learning_rate
-        # self.fc_shapes = fully_connected_shapes
-        # self.inputs = cnn.inputs
-        # #vec = pandas.get_dummies(alphabet).to_dict()
-        # self.numbered_alph = {}
-        # for i in range(len(self.alphabet)):
-        #     self.numbered_alph[self.alphabet[i]] = float(i)
-        # self.numbered_alph["#"] = -1.0
-        #
-        # self.label_starts = [self.label_to_nums("#" + char) for char in\
-        #                         self.alphabet]
-        # self.label_ends = [char + "#" for char in self.alphabet]
-        # self.label_starts = [np.eye(len(self.alphabet)+1)[l] for l in \
-        #                         self.label_starts]
-        # # for k in vec.keys():
-        # #     vs = vec[k].values()
-        # #     vec[k] = tuple([v for v in vs])
-        # # self.alph2vec = vec
-        # # self.vec2alph = {value:key for key, value in self.alph2vec.items()}
-        # # self.rnn_state = self.rnn.net.zero_state(self.batch_size, tf.float32)
-        # self.train_length = rnn_seq_length
-        # self.step = 0
-
-    # def label_to_nums(self, s):
-    #     nums = np.zeros(len(s))
-    #     for i in range(len(s)):
-    #         nums[i] = self.numbered_alph[s[i]]
-    #     return nums
-    #
-    # def get_data_length(self, data):
-    #     used = tf.sign(tf.reduce_max(tf.abs(data), reduction_indices=2))
-    #     length = tf.reduce_sum(used, reduction_indices=1)
-    #     length = tf.cast(length, tf.int32)
-    #     return length
-
-    # def get_output(self):
-    #     label = "rnn_" + str(self.step)
-    #     self.img_features = self.cnn.outputs
-    #     rnn_output, rnn_state = tf.nn.dynamic_rnn(self.rnn.net,
-    #                                     self.seq_embedding, dtype=tf.float32,
-    #                                     initial_state=(self.c0, self.h0),
-    #                                     sequence_length=self.get_data_length\
-    #                                         (self.seq_embedding))
-    #     rnn_output = tf.reshape(rnn_output, [-1] + self.rnn.output_shape)
-    #     rnn_output = tf.gather(rnn_output,
-    #                     tf.range(self.get_data_length(self.seq_embedding)))
-    #     fc = tf.contrib.layers.fully_connected(rnn_output, len(self.alphabet),
-    #             activation_fn=tf.nn.relu,
-    #             weights_initializer=tf.contrib.layers.xavier_initializer(),
-    #             biases_initializer=tf.constant_initializer(0.1))
-    #     prediction = tf.nn.softmax(fc)
-    #     self.step += 1
-    #     return prediction
-    #
-    # def train(self, train_samples, test_samples, iters, display_interval):
-    #     pred = self.get_output()
-    #     target = tf.placeholder(tf.float32, [None, len(self.alphabet)])
-    #     cross_entropy = -tf.reduce_sum(target * tf.log(pred),
-    #                         reduction_indices=[1])
-    #     cross_entropy = tf.reduce_mean(cross_entropy)
-    #     optimizer = tf.train.AdamOptimizer(learning_rate=self.lr,
-    #                     epsilon=1e-2).minimize(cross_entropy)
-    #     sess.run(tf.initialize_all_variables())
-    #     for i in range(iters):
-    #         batch = random.sample(train_samples, self.batch_size)
-    #         xs = []
-    #         ys = []
-    #         for sample in batch:
-    #             xs.append(sample[0])
-    #
-    #             y = sample[1]
-    #             ys.append(y)
-    #         # print xs
-    #         return
-
 if __name__ == "__main__":
-    from tensorflow.examples.tutorials.mnist import input_data
+    #from tensorflow.examples.tutorials.mnist import input_data
     #mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
-    batch_size = 1
-    n_iters = 7000
-    resolution = (30, 30)
-    sample_input_shape = list(resolution) + [1]
-    alphabet = [char for char in "abcdefghijklmnopqrstuvwxzy0123456789-#"]
-    null_terminator = '#'
-    summaries_dir = ""
-    embedding_size = 820
-    n_hidden = 820
-    max_seq_len = 250
+    null_char = "#"
+    db_path = "../mol/ai.db"
+    table_name = "AI"
+    img_directory = "../mol/im/"
+    img_base = "noise"
+    img_extension = ".png"
+    n_noise_variants = 1
 
-    cnn = ConvNet(resolution, [16, 8, 4], [200], [[6,6], [4,4],
-            [2,2]], [[3,3], [3,3], [3,3]], batch_size)
-    #rnn_input_shape = [50, batch_size, 3]
+    rows = set_assembler.fetch_rows(db_path, table_name)
+    alphabet = str(set_assembler.alph_from_rows(rows))
+    alphabet += null_char
+    alphabet = [char for char in alphabet]
+    max_seq_len = set_assembler.seq_len_from_rows(rows)
+
+    train_set = set_assembler.cross_reference_db_imgs(rows, img_directory,
+                    n_noise_variants, img_extension, img_base)
+
+    img = train_set[0][0]
+    resolution = (len(img[0]), len(img[1]))
+
+    batch_size = 1
+    n_iters = 10000
+    # resolution = (30, 30)
+    sample_input_shape = list(resolution) + [1]
+    # alphabet = [char for char in "abcdefghijklmnopqrstuvwxzy0123456789-#"]
+    summaries_dir = ""
+    embedding_size = 220
+    n_hidden = 220
+    # max_seq_len = 250
+
+    cnn = ConvNet(resolution, [32, 16, 8, 4, 2], [400], [[8,8], [6,6],
+            [4,4], [2,2], [1,1]], [[3,3], [3,3], [3,3], [3,3], [3,3]], batch_size)
     rnn_input_shape = [len(alphabet)]
     rnn = RecNet(rnn_input_shape, n_hidden, 1, 0.6)
-    c2s = C2SModel(cnn, rnn, 0.001, batch_size, max_seq_len, [200, 150, 100], alphabet,
-            null_terminator, embedding_size, max_seq_len)
+    c2s = C2SModel(cnn, rnn, 0.0001, batch_size, max_seq_len, [350, 200], alphabet,
+            null_char, embedding_size, max_seq_len)
 
-    samples = []
-    for i in range(2000):
-        y = []
-        xs = np.random.rand(30,30,1) * len(alphabet)
-        x_average = np.average(xs)
-        x_median = np.median(xs)
-        tmp_y = int(x_average * x_median / len(alphabet))
-        one_hot = convert_to_one_hot(tmp_y, len(alphabet))
-        for i in range(max_seq_len):
-            y.append(one_hot)
-            tmp_y += 1
-        samples.append((xs, y))
-    test_samples = []
-    for i in range(200):
-        y = []
-        xs = np.random.rand(30,30,1) * len(alphabet)
-        x_average = np.average(xs)
-        x_median = np.median(xs)
-        tmp_y = int(x_average * x_median / len(alphabet))
-        one_hot = convert_to_one_hot(tmp_y, len(alphabet))
-        for i in range(max_seq_len):
-            y.append(one_hot)
-            tmp_y += 1
-        test_samples.append((xs, y))
-    c2s.train(samples, test_samples, n_iters, display_interval=25)
+    c2s.train(train_set, [], n_iters, display_interval=50)
+
+    train_writer = tf.train.SummaryWriter(summaries_dir + "train", sess.graph)
+    saver = tf.train.Saver()
+    saver.save(sess, "learned.ckpt")
+    tf.train.write_graph(sess.graph_def, '', 'graph.pb')
+
+    # samples = []
+    # for i in range(2000):
+    #     y = []
+    #     xs = np.random.rand(30,30,1) * len(alphabet)
+    #     x_average = np.average(xs)
+    #     x_median = np.median(xs)
+    #     tmp_y = int(x_average * x_median / len(alphabet))
+    #     one_hot = convert_to_one_hot(tmp_y, len(alphabet))
+    #     for i in range(max_seq_len):
+    #         y.append(one_hot)
+    #         tmp_y += 1
+    #     samples.append((xs, y))
+    # test_samples = []
+    # for i in range(200):
+    #     y = []
+    #     xs = np.random.rand(30,30,1) * len(alphabet)
+    #     x_average = np.average(xs)
+    #     x_median = np.median(xs)
+    #     tmp_y = int(x_average * x_median / len(alphabet))
+    #     one_hot = convert_to_one_hot(tmp_y, len(alphabet))
+    #     for i in range(max_seq_len):
+    #         y.append(one_hot)
+    #         tmp_y += 1
+    #     test_samples.append((xs, y))
+
+    # c2s.train(samples, test_samples, n_iters, display_interval=5)
 
     # with tf.variable_scope("c2s", reuse=None) as scope:
     #     c2s.get_output(np.ones([batch_size] + list(resolution)+ [1]), i)
     #     scope.reuse_variables()
         # for i in range(int(100)):
         #     c2s.get_output(np.ones([batch_size] + list(resolution)+ [1]), i)
-
-    train_writer = tf.train.SummaryWriter(summaries_dir + "train", sess.graph)
