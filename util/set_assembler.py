@@ -43,7 +43,7 @@ def alph_from_rows(rows):
             chars.add(c)
     alph = ""
     for c in chars:
-        alph += c
+        alph += str(c)
     return alph
 
 def seq_len_from_rows(rows):
