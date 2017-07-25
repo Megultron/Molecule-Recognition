@@ -1,4 +1,4 @@
-import cPickle as pickle
+import pickle
 import numpy as np
 import pandas
 import random
@@ -312,9 +312,9 @@ class C2SModel(object):
                 self.step += 1
                 # Print stats to user
                 if self.step % display_interval == 0:
-                    print str(self.step) + ": " + \
+                    print (str(self.step) + ": " + \
                      str(display_acc / display_interval) + " - " + \
-                     str(display_loss / display_interval)
+                     str(display_loss / display_interval))
                     display_acc = 0.0
                     display_loss = 0.0
 
@@ -322,8 +322,8 @@ class C2SModel(object):
             # Print epoch stats to user
             epoch_acc = epoch_acc / epoch_len
             epoch_loss = epoch_loss / epoch_len
-            print "EPOCH " + str(epoch_counter) + ": " + str(epoch_acc) + \
-                " - " + str(epoch_loss)
+            print ("EPOCH " + str(epoch_counter) + ": " + str(epoch_acc) + \
+                " - " + str(epoch_loss))
             epoch_acc = 0.0
             epoch_loss = 0.0
 
@@ -345,11 +345,11 @@ class C2SModel(object):
             test_acc = test_acc / n_test_samples
             test_loss = test_loss / n_test_samples
             last_test_loss = test_loss
-            print "TEST " + str(epoch_counter) + ": " + str(test_acc) + \
-                " - " + str(test_loss)
+            print ("TEST " + str(epoch_counter) + ": " + str(test_acc) + \
+                " - " + str(test_loss))
             saver.save(sess, "learned.ckpt")
             tf.train.write_graph(sess.graph_def, '', 'graph.pb')
-            print "SAVED CHECKPOINT"
+            print ("SAVED CHECKPOINT")
 
 if __name__ == "__main__":
     null_char = "#"
@@ -375,6 +375,8 @@ if __name__ == "__main__":
                     train_n_noise_variants, img_extension, img_base)
     img = train_set[0][0]
     resolution = (len(img[0]), len(img[1]))
+
+    print(train_alphabet)
 
     # Assemble evaluation set
     rows = set_assembler.fetch_rows(test_path, table_name)

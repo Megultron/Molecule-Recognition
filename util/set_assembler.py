@@ -39,12 +39,12 @@ def alph_from_rows(rows):
     """
     chars = set()
     for r in rows:
-        for c in r[1].encode("ascii"):
+        for c in r[1]:
             chars.add(c)
     alph = ""
     for c in chars:
         alph += str(c)
-    return alph
+    return str.lower(alph)
 
 def seq_len_from_rows(rows):
     """ Calculates the maximum length of a first-column string field given
