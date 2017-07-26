@@ -1,3 +1,4 @@
+from collections import defaultdict
 from copy import deepcopy
 import pandas
 import pickle
@@ -7,7 +8,9 @@ import os
 import sys
 util_path = os.path.abspath(os.path.join('../util'))
 sys.path.append(util_path)
+import curriculum_builder
 import set_assembler
+import util
 import torch
 from time import sleep
 
@@ -218,39 +221,54 @@ class C2S(object):
             loss = 0.
         print()
 
+def train_courses(model, courses, course_epochs):
+    assert len(course_epochs) == len(courses)
+
+    for i in range(len(courses)):
+        c = courses[i]
+        c_l = course_epochs[i]
+        for j in range(c_l):
+            random.shuffle(c)
+            sample = 0
+            for x,y in c:
+                print("EPOCH {} - {}".format(j, sample))
+                model.forward(x, y.decode('ascii'))
+                print('****************')
+                sample += 1
+
 if __name__ == '__main__':
     # Data initialization
-    # TODO: Refactor into own module
     null_char = "#"
     train_path = "../mol2/ai.db"
-    train_directory = "../mol2/im/"
+    # train_directory = "../mol2/im/"
     test_path = "../mol/ai.db"
-    test_directory = "../mol/im/"
+    # test_directory = "../mol/im/"
     table_name = "AI"
-    train_n_noise_variants = 6
-    img_base = "noise"
-    img_extension = ".png"
-
+    # train_n_noise_variants = 6
+    # img_base = "noise"
+    # img_extension = ".png"
+    #
     rows = set_assembler.fetch_rows(train_path, table_name)
     train_alphabet = str(set_assembler.alph_from_rows(rows))
-    train_alphabet += null_char
-    train_seq_len = set_assembler.seq_len_from_rows(rows)
-    train_set = set_assembler.cross_reference_db_imgs(rows, train_directory,
-                    train_n_noise_variants, img_extension, img_base)
-    img = train_set[0][0]
-    resolution = (len(img[0]), len(img[1]))
-
+    # train_alphabet += null_char
+    # train_seq_len = set_assembler.seq_len_from_rows(rows)
+    # train_set = set_assembler.cross_reference_db_imgs(rows, train_directory,
+    #                 train_n_noise_variants, img_extension, img_base)
+    # img = train_set[0][0]
+    # resolution = (len(img[0]), len(img[1]))
+    #
     rows = set_assembler.fetch_rows(test_path, table_name)
     test_alphabet = str(set_assembler.alph_from_rows(rows)) + null_char
-
+    #
     alph = set(train_alphabet + test_alphabet)
+
+    # alph = util.load_file("../alphabet.pickle")
     l_alph = len(alph)
     a2v, v2a = alph2vec_vec2alph_from_alph(alph)
-
     batch_size = 1
     # batch_size x in_channels x h x w
-    cnn_in_shape = [batch_size] + [1] + list(resolution)
-    rnn_shape = 1024
+    cnn_in_shape = [batch_size] + [1] + [100, 100]
+    rnn_shape = 256
     cnn_out_shape = rnn_shape
     rnn_h = rnn_shape
     rnn_c = rnn_shape
@@ -277,21 +295,10 @@ if __name__ == '__main__':
             cnn_ps.append(d)
         cnn_ps.append(pool)
 
-    x = img
-    y = train_set[0][1].decode('ascii')
-
     c2s = C2S(cnn_in_shape, cnn_out_shape, rnn_h, alph,
               cnn_activation, cnn_ps, chans)
-    for i in range(10000):
-        print("****" + str(i) + "****")
-        c2s.forward(x, y)
 
-        # print('\n****************')
-    # x = Variable(torch.randn(cnn_in_shape))
-    # print("Initializing CNN...")
-    # cnn = CNN(cnn_in_shape, cnn_out_shape, cnn_activation, cnn_ps, chans)
-    # print("Done!\nInitializing RNN...")
-    # rnn = RNN(cnn_out_shape, rnn_h, rnn_c, batch_size, l_alph, cnn._cnn)
-    # print("Done!")
-    # print("Dummy input test...")
-    # rnn.process_sample(cnn.forward(x)[0], y, l_alph, a2v, v2a)
+    courses = util.load_file("../curricula/courses_0.pickle")
+
+    train_courses(c2s, courses, [100]*len(courses))
+    util.save_file(c2s, "../models/c2s.pickle")

@@ -44,7 +44,7 @@ def alph_from_rows(rows):
     alph = ""
     for c in chars:
         alph += str(c)
-    return str.lower(alph)
+    return alph
 
 def seq_len_from_rows(rows):
     """ Calculates the maximum length of a first-column string field given
