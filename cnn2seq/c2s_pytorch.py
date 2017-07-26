@@ -35,6 +35,12 @@ def str_to_one_hots(s, l_alph, a2v):
         seq_pos += 1
     return list(one_hots)
 
+def one_hot_to_idx(v):
+    for i in range(v.shape[0]):
+        if v[i] == 1.:
+            return i
+    return -1.
+
 class CNN(object):
     def __init__(self, in_shape, out_shape, activation, layer_params, channels):
         """ Constructs a Convolutional Neural Network (CNN).
@@ -126,10 +132,10 @@ class RNN(object):
         self.c = Variable(torch.randn( self.batch_size, cell_shape))
         self.hidden = (self.h, self.c)
 
-        self.criterion = torch.nn.CrossEntropyLoss()
-        self.opt = torch.optim.Adam(list(self._rnn.parameters()) + list(cnn.parameters()),
-                            lr=0.001)
-        self.opt.zero_grad()
+        # self.criterion = torch.nn.CrossEntropyLoss()
+        # self.opt = torch.optim.Adam(list(self._rnn.parameters()) + list(cnn.parameters()),
+        #                     lr=0.001)
+        # self.opt.zero_grad()
 
     def forward(self, x, hidden):
         x = x.view([1, 1, self.in_shape])
@@ -140,7 +146,7 @@ class RNN(object):
         x2 = self._rnn[2](x2)
         return x, x2, hidden
 
-    def process_sample(self, x, y, l_alph, a2v, v2a, null_char="#"):
+    def process_sample_(self, x, y, l_alph, a2v, v2a, null_char="#"):
         y += null_char
         pred = Variable(torch.FloatTensor(len(y), l_alph))
         h_c = self.hidden0
@@ -161,9 +167,56 @@ class RNN(object):
             l_o += 1
         target = torch.from_numpy(np.asarray(oh_y)).long()
         target = target.view([l_y * l_alph])
-        loss = self.criterion(pred, Variable(target))
-        loss.backward()
 
+class C2S(object):
+    def __init__(self, in_shape, cnn_out_shape, rnn_hidden_shape, alphabet,
+               cnn_activation, cnn_params, cnn_channels):
+        self.l_alph = len(alphabet)
+        self._cnn = CNN(in_shape, cnn_out_shape, cnn_activation, cnn_params,
+                        cnn_channels)
+        self._rnn = RNN(cnn_out_shape, rnn_hidden_shape, rnn_hidden_shape, 1,
+                        self.l_alph, self._cnn)
+        self.a2v, self.v2a = alph2vec_vec2alph_from_alph(alphabet)
+
+    def forward(self, x, y, null_char="#"):
+        x = Variable(torch.from_numpy(x).float())
+        x = x.view([1] + [1] + list(x.size())[:-1])
+        x = self._cnn.forward(x)
+
+        y += null_char
+        l_y = len(y)
+        l_o = 0
+        char_output = None
+        hidden = self._rnn.hidden0
+
+        loss = 0.
+        criterion = torch.nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(list(self._rnn._rnn.parameters()) + \
+                                     list(self._cnn._cnn.parameters()), lr=1e-5)
+        print(y)
+        result = ""
+        # while char_output is not null_char and l_o < l_y:
+        while l_o < l_y:
+            x, x2, hidden = self._rnn.forward(x, hidden)
+            y_np = a2v[y[l_o]]
+            top, idx = torch.topk(x2, 1)
+            oh = torch.sparse.FloatTensor(idx.data, torch.FloatTensor([1.]),
+                                          torch.Size([self.l_alph])).to_dense()
+            char_output = v2a[tuple(oh.numpy())]
+            y_o_oh = np.asarray(a2v[y[l_o]])
+            y_o_oh = one_hot_to_idx(y_o_oh)
+            y_o_oh = Variable(torch.LongTensor([y_o_oh]))
+            # print(y_o_oh)
+            # print("\'" + char_output + "\'")
+            loss += criterion(x2.view([1, self.l_alph]), y_o_oh)
+            loss.backward(retain_variables=True)
+            l_o += 1
+            result += char_output
+            print(result, end="\r")
+            # print("\n" + str(loss.data.numpy()))
+            optimizer.step()
+            optimizer.zero_grad()
+            loss = 0.
 
 if __name__ == '__main__':
     # Data initialization
@@ -197,9 +250,10 @@ if __name__ == '__main__':
     batch_size = 1
     # batch_size x in_channels x h x w
     cnn_in_shape = [batch_size] + [1] + list(resolution)
-    cnn_out_shape = 512
-    rnn_h = 512
-    rnn_c = 512
+    rnn_shape = 1024
+    cnn_out_shape = rnn_shape
+    rnn_h = rnn_shape
+    rnn_c = rnn_shape
 
     cnn_activation = F.relu
     conv_dict = {'type': 'conv',
@@ -210,11 +264,12 @@ if __name__ == '__main__':
                  'kernel': 2,
                  'strides': 2,
                  'padding': 0}
-    chans = [128]*2 + [256]*2 + [512]*2
+    # chans = [128]*2 + [256]*2 + [512]*2
+    chans = [128]*2
     chans_counter = 0
     cnn_ps = []
     convs_per_pool = 2
-    n_superlayers = 3
+    n_superlayers = 1
     for i in range(n_superlayers):
         for j in range(convs_per_pool):
             d = deepcopy(conv_dict)
@@ -226,11 +281,17 @@ if __name__ == '__main__':
     x = img
     y = train_set[0][1].decode('ascii')
 
-    x = Variable(torch.randn(cnn_in_shape))
-    print("Initializing CNN...")
-    cnn = CNN(cnn_in_shape, cnn_out_shape, cnn_activation, cnn_ps, chans)
-    print("Done!\nInitializing RNN...")
-    rnn = RNN(cnn_out_shape, rnn_h, rnn_c, batch_size, l_alph, cnn._cnn)
-    print("Done!")
-    print("Dummy input test...")
-    rnn.process_sample(cnn.forward(x)[0], y, l_alph, a2v, v2a)
+    c2s = C2S(cnn_in_shape, cnn_out_shape, rnn_h, alph,
+              cnn_activation, cnn_ps, chans)
+    for i in range(10000):
+        print("****" + str(i) + "****")
+        c2s.forward(x, y)
+        print('\n****************')
+    # x = Variable(torch.randn(cnn_in_shape))
+    # print("Initializing CNN...")
+    # cnn = CNN(cnn_in_shape, cnn_out_shape, cnn_activation, cnn_ps, chans)
+    # print("Done!\nInitializing RNN...")
+    # rnn = RNN(cnn_out_shape, rnn_h, rnn_c, batch_size, l_alph, cnn._cnn)
+    # print("Done!")
+    # print("Dummy input test...")
+    # rnn.process_sample(cnn.forward(x)[0], y, l_alph, a2v, v2a)
