@@ -9,13 +9,13 @@ util_path = os.path.abspath(os.path.join('../util'))
 sys.path.append(util_path)
 import set_assembler
 import torch
+from time import sleep
 
 from torch.autograd import Variable
 from torch.nn import init
 import torch.nn.functional as F
 
-# TODO: Necessary restructuring of targets/predictions and variables to allow
-#       for proper backpropagation.
+# TODO: Replace magic constant in cnn._lin
 
 def alph2vec_vec2alph_from_alph(alphabet):
     vec = pandas.get_dummies(sorted(list(alph))).to_dict()
@@ -83,6 +83,8 @@ class CNN(object):
                 self.add_max_pool(ps)
             else:
                 raise TypeError("Unsupported CNN layer type.")
+        self._cnn = self._cnn.cuda()
+        self._lin = torch.nn.Linear(73728, self.out_shape).cuda()
 
     def add_conv_layer(self, ps):
         in_channels = self.last_channels
@@ -110,7 +112,7 @@ class CNN(object):
         out_shape = x.size()
         new_shape = [1, out_shape[1] * out_shape[2] * out_shape[3]]
         x = x.view(new_shape)
-        x = torch.nn.Linear(new_shape[1], self.out_shape)(x)
+        x = self._lin(x)
         return x
 
 class RNN(object):
@@ -124,18 +126,14 @@ class RNN(object):
         self._rnn.append(torch.nn.LSTM(self.in_shape, self.h_shape))
         self._rnn.append(torch.nn.Linear(self.h_shape, alphabet_length))
         self._rnn.append(torch.nn.Softmax())
+        self._rnn = self._rnn.cuda()
 
-        self.h0 = Variable(torch.zeros(1, self.batch_size, hidden_shape))
-        self.c0 = Variable(torch.zeros(1, self.batch_size, cell_shape))
+        self.h0 = Variable(torch.zeros(1, self.batch_size, hidden_shape)).cuda()
+        self.c0 = Variable(torch.zeros(1, self.batch_size, cell_shape)).cuda()
         self.hidden0 = (self.h0, self.c0)
-        self.h = Variable(torch.randn(1, self.batch_size, hidden_shape))
-        self.c = Variable(torch.randn( self.batch_size, cell_shape))
+        self.h = Variable(torch.randn(1, self.batch_size, hidden_shape)).cuda()
+        self.c = Variable(torch.randn( self.batch_size, cell_shape)).cuda()
         self.hidden = (self.h, self.c)
-
-        # self.criterion = torch.nn.CrossEntropyLoss()
-        # self.opt = torch.optim.Adam(list(self._rnn.parameters()) + list(cnn.parameters()),
-        #                     lr=0.001)
-        # self.opt.zero_grad()
 
     def forward(self, x, hidden):
         x = x.view([1, 1, self.in_shape])
@@ -179,7 +177,7 @@ class C2S(object):
         self.a2v, self.v2a = alph2vec_vec2alph_from_alph(alphabet)
 
     def forward(self, x, y, null_char="#"):
-        x = Variable(torch.from_numpy(x).float())
+        x = Variable(torch.from_numpy(x).float()).cuda()
         x = x.view([1] + [1] + list(x.size())[:-1])
         x = self._cnn.forward(x)
 
@@ -192,7 +190,8 @@ class C2S(object):
         loss = 0.
         criterion = torch.nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(list(self._rnn._rnn.parameters()) + \
-                                     list(self._cnn._cnn.parameters()), lr=1e-5)
+                                     list(self._cnn._cnn.parameters()) + \
+                                     list(self._cnn._lin.parameters()), lr=5e-4)
         print(y)
         result = ""
         # while char_output is not null_char and l_o < l_y:
@@ -200,7 +199,7 @@ class C2S(object):
             x, x2, hidden = self._rnn.forward(x, hidden)
             y_np = a2v[y[l_o]]
             top, idx = torch.topk(x2, 1)
-            oh = torch.sparse.FloatTensor(idx.data, torch.FloatTensor([1.]),
+            oh = torch.sparse.FloatTensor(idx.data.cpu(), torch.FloatTensor([1.]),
                                           torch.Size([self.l_alph])).to_dense()
             char_output = v2a[tuple(oh.numpy())]
             y_o_oh = np.asarray(a2v[y[l_o]])
@@ -208,7 +207,7 @@ class C2S(object):
             y_o_oh = Variable(torch.LongTensor([y_o_oh]))
             # print(y_o_oh)
             # print("\'" + char_output + "\'")
-            loss += criterion(x2.view([1, self.l_alph]), y_o_oh)
+            loss += criterion(x2.view([1, self.l_alph]), y_o_oh.cuda())
             loss.backward(retain_variables=True)
             l_o += 1
             result += char_output
@@ -217,6 +216,7 @@ class C2S(object):
             optimizer.step()
             optimizer.zero_grad()
             loss = 0.
+        print()
 
 if __name__ == '__main__':
     # Data initialization
@@ -264,12 +264,11 @@ if __name__ == '__main__':
                  'kernel': 2,
                  'strides': 2,
                  'padding': 0}
-    # chans = [128]*2 + [256]*2 + [512]*2
-    chans = [128]*2
+    chans = [64]*2 + [256]*2 + [512]*2
     chans_counter = 0
     cnn_ps = []
     convs_per_pool = 2
-    n_superlayers = 1
+    n_superlayers = 3
     for i in range(n_superlayers):
         for j in range(convs_per_pool):
             d = deepcopy(conv_dict)
@@ -286,7 +285,8 @@ if __name__ == '__main__':
     for i in range(10000):
         print("****" + str(i) + "****")
         c2s.forward(x, y)
-        print('\n****************')
+
+        # print('\n****************')
     # x = Variable(torch.randn(cnn_in_shape))
     # print("Initializing CNN...")
     # cnn = CNN(cnn_in_shape, cnn_out_shape, cnn_activation, cnn_ps, chans)
