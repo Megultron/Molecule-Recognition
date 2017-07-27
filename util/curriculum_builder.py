@@ -1,5 +1,14 @@
 from collections import defaultdict
 
+def get_symbol_counts(ds, alphabet):
+    n_symbols = 0
+    symbol_counts = defaultdict(int)
+    for _, y in ds:
+        for s in y.decode('ascii'):
+            symbol_counts[s] += 1
+            n_symbols += 1
+    return symbol_counts, n_symbols
+
 def get_iupac_names(ds):
     names = set()
     for x, y in ds:

@@ -27,6 +27,7 @@ def alph2vec_vec2alph_from_alph(alphabet):
         vec[k] = tuple([v for v in vs])
     a2v = vec
     v2a = {value:key for key,value in a2v.items()}
+
     return a2v, v2a
 
 def str_to_one_hots(s, l_alph, a2v):
@@ -331,7 +332,11 @@ if __name__ == '__main__':
               cnn_activation, cnn_ps, chans)
 
     courses = util.load_file("../curricula/courses_0.pickle")
+    symbol_counts, n_symbols = util.load_file("../symbol_stats.pickle")
+    label_weights = np.zeros(l_alph)
+    print(sorted(list(alph)))
+    # for k,v in symbol_counts.items():
+    #     print("{}: {}".format(k, 1. / (v / n_symbols)))
 
-    best_loss = train_courses(c2s, courses, test_set, [3000, 2000, 1000, 1000])
-    print(best_loss)
-    util.save_file(c2s, "../models/c2s.pickle")
+    # train_courses(c2s, courses, [100]*len(courses))
+    # util.save_file(c2s, "../models/c2s.pickle")
