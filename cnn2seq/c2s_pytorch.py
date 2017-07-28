@@ -12,6 +12,7 @@ import curriculum_builder
 import set_assembler
 import util
 import torch
+import torch.optim.lr_scheduler
 from time import sleep
 
 from torch.autograd import Variable
@@ -144,48 +145,29 @@ class RNN(object):
         x = x.view([1, 1, self.in_shape])
         # print(x.size())
         x, hidden = self._rnn[0](x, hidden)
-        x = x.view([1, x.size()[-1]])
-        x = self._rnn[1](x)
-        x = self._rnn[2](x)
-        return x, hidden
-
-    # def process_sample_(self, x, y, l_alph, a2v, v2a, null_char="#"):
-    #     y += null_char
-    #     pred = Variable(torch.FloatTensor(len(y), l_alph))
-    #     h_c = self.hidden0
-    #     l_o = 0
-    #     l_y = len(y)
-    #     oh_y = str_to_one_hots(y, l_alph, a2v)
-    #     char_output = None
-    #     output_str = ""
-    #     while char_output is not null_char and l_o < l_y:
-    #         x, x2, h_c = self.forward(x, h_c)
-    #         top, idx = torch.topk(x2, 1)
-    #         alph_size = torch.Size([l_alph])
-    #         oh = torch.sparse.FloatTensor(idx.data, torch.FloatTensor([1.]),
-    #                                       alph_size).to_dense()
-    #         char_output = v2a[tuple(oh.numpy())]
-    #         output_str += char_output
-    #         pred[l_o] = x2.data
-    #         l_o += 1
-    #     target = torch.from_numpy(np.asarray(oh_y)).long()
-    #     target = target.view([l_y * l_alph])
+        x2 = x.view([1, x.size()[-1]])
+        x2 = self._rnn[1](x2)
+        x2 = self._rnn[2](x2)
+        return x, x2, hidden
 
 class C2S(object):
     def __init__(self, in_shape, cnn_out_shape, rnn_hidden_shape, alphabet,
-               cnn_activation, cnn_params, cnn_channels):
+               cnn_activation, cnn_params, cnn_channels, label_weights):
+        label_weights = torch.FloatTensor(label_weights).cuda()
         self.l_alph = len(alphabet)
         self._cnn = CNN(in_shape, cnn_out_shape, cnn_activation, cnn_params,
                         cnn_channels)
         self._rnn = RNN(cnn_out_shape, rnn_hidden_shape, rnn_hidden_shape, 1,
                         self.l_alph, self._cnn)
         self.a2v, self.v2a = alph2vec_vec2alph_from_alph(alphabet)
-        self.criterion = torch.nn.CrossEntropyLoss()
+        self.criterion = torch.nn.CrossEntropyLoss(weight=label_weights)
         self.optimizer = torch.optim.RMSprop(list(self._rnn._rnn.parameters()) + \
                                      list(self._cnn._cnn.parameters()) + \
-                                     list(self._cnn._lin.parameters()), lr=1e-5)
+                                     list(self._cnn._lin.parameters()), lr=0.01)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=30, gamma=0.1)
 
     def forward(self, x, y, null_char="#", verbose=False, learn=True):
+        # print(self.optimizer.state_dict()['param_groups'][0]['lr'])
         total_loss = 0.
         x = Variable(torch.from_numpy(x).float()).cuda()
         x = x.view([1] + [1] + list(x.size())[:-1])
@@ -203,7 +185,7 @@ class C2S(object):
         result = ""
         # while char_output is not null_char and l_o < l_y:
         while l_o < l_y:
-            x2, hidden = self._rnn.forward(x, hidden)
+            x, x2, hidden = self._rnn.forward(x, hidden)
             y_np = a2v[y[l_o]]
             top, idx = torch.topk(x2, 1)
             oh = torch.sparse.FloatTensor(idx.data.cpu(), torch.FloatTensor([1.]),
@@ -217,17 +199,18 @@ class C2S(object):
             this_loss = self.criterion(x2.view([1, self.l_alph]), y_o_oh.cuda()).cpu().data
             loss += self.criterion(x2.view([1, self.l_alph]), y_o_oh.cuda())
             total_loss += this_loss
-            if learn:
-                loss.backward(retain_variables=True)
+            # if learn:
+            #     loss.backward(retain_variables=True)
             l_o += 1
             result += char_output
             if verbose:
                 print(result, end="\r")
             # print("\n" + str(loss.data.numpy()))
-            if learn:
-                self.optimizer.step()
-                self.optimizer.zero_grad()
-            loss = 0.
+        if learn:
+            loss.backward(retain_variables=False)
+            self.optimizer.step()
+            self.optimizer.zero_grad()
+            # loss = 0.
 
         if verbose:
             print()
@@ -246,31 +229,32 @@ def train_courses(model, courses, validation_set, course_epochs):
             sample = 0
             n_samples = len(c)
             for x,y in c:
-                print("EPOCH {} \ {} - {} / {}".format(j, c_l, sample, n_samples))
+                print("EPOCH {}/{} - {}/{}".format(j, c_l, sample, n_samples))
                 model.forward(x, y.decode('ascii'), verbose=True)
                 print('****************')
                 sample += 1
-            v_loss = 0.
-            print("EVALUATION...")
-            n_samples = len(validation_set)
-            sample = 0
-            for x,y in validation_set:
-                print("{} / {}...".format(sample, n_samples))
-                x, y = validation_set[sample]
-                print(len(y))
-                l = model.forward(x, y.decode('ascii'), learn=False)
-                v_loss += l
-                sample += 1
-            avg_v_loss = v_loss / valid_l
-            print("EPOCH {} VALIDATION LOSS: {}".format(j, avg_v_loss))
-            best_loss = min(best_loss, avg_v_loss.numpy()[0])
+            # v_loss = 0.
+            # print("EVALUATION...")
+            # n_samples = len(validation_set)
+            # sample = 0
+            # for x,y in validation_set:
+            #     print("{} / {}...".format(sample, n_samples))
+            #     x, y = validation_set[sample]
+            #     print(len(y))
+            #     l = model.forward(x, y.decode('ascii'), learn=False)
+            #     v_loss += l
+            #     sample += 1
+            # avg_v_loss = v_loss / valid_l
+            # print("EPOCH {} VALIDATION LOSS: {}".format(j, avg_v_loss))
+            # best_loss = min(best_loss, avg_v_loss.numpy()[0])
+            model.scheduler.step()
     return best_loss
 
 if __name__ == '__main__':
     # Data initialization
     null_char = "#"
     train_path = "../mol2/ai.db"
-    # train_directory = "../mol2/im/"
+    train_directory = "../mol2/im/"
     test_path = "../mol/ai.db"
     test_directory = "../mol/im/"
     table_name = "AI"
@@ -292,7 +276,7 @@ if __name__ == '__main__':
     test_set = set_assembler.cross_reference_db_imgs(rows, test_directory,
                                                      train_n_noise_variants,
                                                      img_extension, img_base)
-    #
+
     alph = set(train_alphabet + test_alphabet)
 
     # alph = util.load_file("../alphabet.pickle")
@@ -301,7 +285,7 @@ if __name__ == '__main__':
     batch_size = 1
     # batch_size x in_channels x h x w
     cnn_in_shape = [batch_size] + [1] + [100, 100]
-    rnn_shape = 512
+    rnn_shape = 600
     cnn_out_shape = rnn_shape
     rnn_h = rnn_shape
     rnn_c = rnn_shape
@@ -328,15 +312,10 @@ if __name__ == '__main__':
             cnn_ps.append(d)
         cnn_ps.append(pool)
 
+    label_weights = util.load_file("../label_weights.pickle")
     c2s = C2S(cnn_in_shape, cnn_out_shape, rnn_h, alph,
-              cnn_activation, cnn_ps, chans)
-
+              cnn_activation, cnn_ps, chans, label_weights)
     courses = util.load_file("../curricula/courses_0.pickle")
-    symbol_counts, n_symbols = util.load_file("../symbol_stats.pickle")
-    label_weights = np.zeros(l_alph)
-    print(sorted(list(alph)))
-    # for k,v in symbol_counts.items():
-    #     print("{}: {}".format(k, 1. / (v / n_symbols)))
 
-    # train_courses(c2s, courses, [100]*len(courses))
-    # util.save_file(c2s, "../models/c2s.pickle")
+    train_courses(c2s, courses, test_set, [3000, 2000, 1000, 1000])
+    util.save_file(c2s, "../models/c2s.pickle")

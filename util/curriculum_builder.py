@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-def get_symbol_counts(ds, alphabet):
+def get_symbol_counts(ds):
     n_symbols = 0
     symbol_counts = defaultdict(int)
     for _, y in ds:
